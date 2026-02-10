@@ -132,32 +132,33 @@ class Player extends Phaser.GameObjects.Container {
       this.player.setFrame(newFrame);
     }
 
-    this.attack();
+    this.attack(scene.time.now);
   }
 
- attack() {
-  // Cooldown is now ms (0 means ready)
-  if (this.attackCooldown > 0) return;
+ attack(now) {
+  // Not ready yet
+  if (now < this.nextAttackAt) return;
 
+  // Only bother scanning when we are actually allowed to attack
   let closestEnemy = null;
   let closestDistance = Infinity;
 
   scene.sprites.children.entries.forEach((e) => {
-    if (e && e.type === "enemy") {
-      const dist = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
-      if (dist < closestDistance) {
-        closestDistance = dist;
-        closestEnemy = e;
-      }
+    if (!e || e.type !== "enemy") return;
+
+    const dist = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
+    if (dist < closestDistance) {
+      closestDistance = dist;
+      closestEnemy = e;
     }
   });
 
   if (!closestEnemy || closestDistance > 80) return;
 
-  // 60 frames @ 60fps ≈ 1000ms
-  this.attackCooldown = 1000;
+  const COOLDOWN_MS = 1000;
 
-  // 15 frames @ 60fps ≈ 250ms (if you use this elsewhere)
+  this.nextAttackAt = now + COOLDOWN_MS;
+
   this.swinging = 250;
 
   const spr = scene.add.sprite(0, 0, "slash");
@@ -168,7 +169,6 @@ class Player extends Phaser.GameObjects.Container {
   spr.anims.play("slash", true);
   spr.on("animationcomplete", () => spr.destroy());
 
-  // One hit-scan pass (safe + deterministic)
   scene.sprites.children.entries.forEach((e) => {
     if (!e || e.type !== "enemy") return;
 
@@ -181,7 +181,6 @@ class Player extends Phaser.GameObjects.Container {
       Phaser.Math.Angle.Wrap(Phaser.Math.DegToRad(this.playerAngle) - a)
     );
 
-    // knockback should be clamped to 0 in enemy tick; then this is safe
     if (angleDelta < 1.2 && e.knockback <= 0) {
       e.takeDamage(4, { x: Math.cos(a), y: Math.sin(a) });
     }

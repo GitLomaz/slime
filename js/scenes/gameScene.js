@@ -102,7 +102,7 @@ let gameScene = new Phaser.Class({
 
   update: function (time, delta) {
     const fps = Math.floor(this.game.loop.actualFps);
-    this.fpsText.setText("FPS: " + fps);
+    this.fpsText.setText("1.1 - FPS: " + fps);
     if (this.counter % 20 === 0) {
       this.water.setFrame((this.counter % 80) / 20);
     }
