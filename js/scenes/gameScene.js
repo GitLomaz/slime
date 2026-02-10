@@ -79,6 +79,7 @@ let gameScene = new Phaser.Class({
     this.physics.add.collider(this.sprites, this.layer);
     this.physics.add.collider(this.drops, this.layer);
     this.physics.add.collider(this.sprites);
+    this.cameras.main.setZoom(1.5, 1.5)
 
     this.player = new Player();
 
