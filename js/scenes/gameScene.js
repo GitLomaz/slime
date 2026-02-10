@@ -100,7 +100,7 @@ let gameScene = new Phaser.Class({
     });
   },
 
-  update: function () {
+  update: function (time, delta) {
     const fps = Math.floor(this.game.loop.actualFps);
     this.fpsText.setText("FPS: " + fps);
     if (this.counter % 20 === 0) {
@@ -108,14 +108,13 @@ let gameScene = new Phaser.Class({
     }
 
     scene.sprites.children.entries.forEach(e => {
-      e.tick();
+      e.tick(delta);
     });
 
     scene.drops.children.entries.forEach(e => {
-      e.tick();
+      e.tick(delta);
     });
 
     this.counter++;
-    this.player.tick();
   },
 });

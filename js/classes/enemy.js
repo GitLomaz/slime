@@ -36,18 +36,23 @@ class Enemy extends Phaser.GameObjects.Container {
     });
   }
 
-  tick() {
+  tick(delta) {
     if (this.damageFlash > 0) {
-      this.damageFlash--;
-      let damageFlashState = Math.floor(this.damageFlash / 3);
+      this.damageFlash -= delta;
+
+      // replicate "every 3 frames @60fps ≈ 50ms"
+      const damageFlashState = Math.floor(this.damageFlash / 50);
+
       if (damageFlashState % 5 === 0) {
         this.sprite.clearTint();
         this.sprite.setTint(0xff0000);
-      } else if (damageFlashState % 5 === 1) {
+      } 
+      else if (damageFlashState % 5 === 1) {
         this.sprite.clearTint();
         this.sprite.setTintFill(0xff0000);
       }
-    } else {
+    } 
+    else {
       this.sprite.clearTint();
     }
   }
@@ -59,7 +64,7 @@ class Enemy extends Phaser.GameObjects.Container {
     if (this.healthBar.alpha === 0) {
       this.showHealthbar();
     }
-    this.damageFlash = 25;
+    this.damageFlash = 400;
     this.applyKnockback(force);
     this.health = this.health - damage;
     scene.tweens.add({
@@ -76,7 +81,7 @@ class Enemy extends Phaser.GameObjects.Container {
   applyKnockback(force, randomizer = 400) {
     this.body.setVelocityX(force.x * getRandomInt(100, randomizer));
     this.body.setVelocityY(force.y * getRandomInt(100, randomizer));
-    this.knockback = 10;
+    this.knockback = 250;
   }
 
   die(force) {

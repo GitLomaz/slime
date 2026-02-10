@@ -20,45 +20,48 @@ class Blob extends Enemy {
     this.attackType = "melee";
   }
 
-tick() {
-  super.tick();
+  tick(delta) {
+    super.tick(delta);
 
-  if (this.knockback > 0) {
-    this.knockback--;
-    return;
+    // ---- Knockback (was 1 frame per tick) ----
+    if (this.knockback > 0) {
+      this.knockback -= delta;
+      return;
+    }
+
+    this.ticks += delta;
+
+    // ---- Choose new direction about every ~40 frames @60fps ≈ 660ms ----
+    if (!this.moveDir || this.ticks % 660 < delta) {
+      const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+
+      this.moveDir = {
+        x: Math.cos(angle),
+        y: Math.sin(angle),
+
+        // 20–40 frames → 330–660ms
+        duration: Phaser.Math.Between(330, 660)
+      };
+    }
+
+    // ---- Movement ----
+    if (this.moveDir.duration > 0) {
+      const SPEED = 40; // pixels per SECOND
+
+      this.body.setVelocity(
+        this.moveDir.x * SPEED,
+        this.moveDir.y * SPEED
+      );
+
+      this.moveDir.duration -= delta;
+    } 
+    else {
+      this.body.setVelocity(0, 0);
+    }
+
+    // ---- Animation: every ~10 frames ≈ 166ms ----
+    if (this.ticks % 166 < delta) {
+      this.sprite.setFrame((Math.floor(this.ticks / 166) % 3));
+    }
   }
-
-  this.ticks++;
-
-  // Every ~40 ticks choose a new random direction
-  if (!this.moveDir || this.ticks % 40 === 0) {
-    const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
-
-    this.moveDir = {
-      x: Math.cos(angle),
-      y: Math.sin(angle),
-      duration: Phaser.Math.Between(20, 40) // how long to move
-    };
-  }
-
-  // Move while duration remains
-  if (this.moveDir.duration > 0) {
-    const SPEED = 40;
-
-    this.body.setVelocity(
-      this.moveDir.x * SPEED,
-      this.moveDir.y * SPEED
-    );
-
-    this.moveDir.duration--;
-  } else {
-    // pause between hops
-    this.body.setVelocity(0, 0);
-  }
-
-  // Animation
-  if (this.ticks % 10 === 0) {
-    this.sprite.setFrame((this.ticks % 30) / 10);
-  }
-}
 }
