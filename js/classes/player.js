@@ -61,11 +61,18 @@ class Player extends Phaser.GameObjects.Container {
     });
   }
 
-  tick() {
+  tick(delta) {
     // Reset velocity each tick
     this.body.setVelocity(0, 0);
+
     if (this.attackCooldown > 0) {
-      this.attackCooldown--;
+      this.attackCooldown -= delta;
+      if (this.attackCooldown < 0) this.attackCooldown = 0;
+    }
+
+    if (this.swinging > 0) {
+      this.swinging -= delta;
+      if (this.swinging < 0) this.swinging = 0;
     }
 
     // --- Directional animation offset based on current angle ---
@@ -101,13 +108,21 @@ class Player extends Phaser.GameObjects.Container {
         moving = true;
 
         const angle =
-          Phaser.Math.RAD_TO_DEG * Phaser.Math.Angle.Between(this.x, this.y, wp.x, wp.y);
+          Phaser.Math.RAD_TO_DEG *
+          Phaser.Math.Angle.Between(this.x, this.y, wp.x, wp.y);
+
         this.playerAngle = angle;
       }
     }
 
+    // --- Walk animation timing (was stepCounter++ per frame) ---
+    // Keep your exact math: newFrame = floor(stepCounter/6)%4 + offset
+    // At 60fps, stepCounter += 1/frame -> frame changes every 6 frames = 100ms
+    const STEP_RATE = 1000 / 16.6667; // 60 "stepCounter units" per second ≈ 60
+    // simpler: stepCounter += delta / 16.6667
+
     if (moving) {
-      this.stepCounter++;
+      this.stepCounter += delta / 16.6667;
     } else {
       this.stepCounter = 21;
     }
@@ -116,61 +131,62 @@ class Player extends Phaser.GameObjects.Container {
     if (this.player.frame.name !== newFrame) {
       this.player.setFrame(newFrame);
     }
+
     this.attack();
   }
 
-  attack() {
-    let closestEnemy = null;
-    let closestDistance = Infinity;
-    scene.sprites.children.entries.forEach((e) => {
-      if (e.type === "enemy") {
-        const dist = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
-        if (dist < closestDistance) {
-          closestDistance = dist;
-          closestEnemy = e;
-        }
+ attack() {
+  // Cooldown is now ms (0 means ready)
+  if (this.attackCooldown > 0) return;
+
+  let closestEnemy = null;
+  let closestDistance = Infinity;
+
+  scene.sprites.children.entries.forEach((e) => {
+    if (e && e.type === "enemy") {
+      const dist = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
+      if (dist < closestDistance) {
+        closestDistance = dist;
+        closestEnemy = e;
       }
-    });
-    if (this.attackCooldown !== 0 || !closestEnemy || closestDistance > 80) {
-      return;
     }
-    let that = this;
-    this.attackCooldown = 60;
-    this.swinging = 15;
-    let spr = scene.add.sprite(0, 0, "slash");
-    spr.setScale(3);
-    spr.setAngle(this.playerAngle);
-    this.add(spr);
-    spr.anims.play("slash", true);
-    spr.on(
-      "animationcomplete",
-      function () {
-        spr.destroy();
-      },
-      spr
+  });
+
+  if (!closestEnemy || closestDistance > 80) return;
+
+  // 60 frames @ 60fps ≈ 1000ms
+  this.attackCooldown = 1000;
+
+  // 15 frames @ 60fps ≈ 250ms (if you use this elsewhere)
+  this.swinging = 250;
+
+  const spr = scene.add.sprite(0, 0, "slash");
+  spr.setScale(3);
+  spr.setAngle(this.playerAngle);
+  this.add(spr);
+
+  spr.anims.play("slash", true);
+  spr.on("animationcomplete", () => spr.destroy());
+
+  // One hit-scan pass (safe + deterministic)
+  scene.sprites.children.entries.forEach((e) => {
+    if (!e || e.type !== "enemy") return;
+
+    const d = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
+    if (d >= 100) return;
+
+    const a = Phaser.Math.Angle.Between(this.x, this.y, e.x, e.y);
+
+    const angleDelta = Math.abs(
+      Phaser.Math.Angle.Wrap(Phaser.Math.DegToRad(this.playerAngle) - a)
     );
-    let interaction = false;
-    do {
-      interaction = false;
-      scene.sprites.children.entries.forEach(function (e) {
-        if (e && e.type === "enemy") {
-          let d = Phaser.Math.Distance.Between(that.x, that.y, e.x, e.y);
-          if (d < 100) {
-            let a = Phaser.Math.Angle.Between(that.x, that.y, e.x, e.y);
-            let delta = Math.abs(
-              Phaser.Math.Angle.Wrap(Phaser.Math.DegToRad(that.playerAngle) - a)
-            );
-            if (delta < 1.2 && e.knockback === 0) {
-              let x = Math.cos(a);
-              let y = Math.sin(a);
-              e.takeDamage(4, { x: x, y: y });
-              interaction = true;
-            }
-          }
-        }
-      });
-    } while (interaction);
-  }
+
+    // knockback should be clamped to 0 in enemy tick; then this is safe
+    if (angleDelta < 1.2 && e.knockback <= 0) {
+      e.takeDamage(4, { x: Math.cos(a), y: Math.sin(a) });
+    }
+  });
+}
 
   gainCoins() {
     this.coins++;
