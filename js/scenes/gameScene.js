@@ -9,6 +9,7 @@ let gameScene = new Phaser.Class({
 
   preload: function () {
     this.load.image("grassBig", "images/grassBig.png");
+    this.load.image("pixel2", "images/pixel2.png");
     this.load.tilemapTiledJSON("map", "js/data/template.json");
 
     
@@ -49,6 +50,7 @@ let gameScene = new Phaser.Class({
 
     this.map = this.make.tilemap({ key: "map" });
     this.map = transformMap(scene.map);
+    this.enemies = this.add.group();
 
     this.water = this.add
       .tileSprite(
@@ -76,14 +78,11 @@ let gameScene = new Phaser.Class({
 
     this.physics.add.collider(this.sprites, this.layer);
     this.physics.add.collider(this.drops, this.layer);
-
     this.physics.add.collider(this.sprites);
 
     this.player = new Player();
 
-    for (let i = 0; i < 20; i++) {
-      new Blob();
-    }
+    spawnLevel();
 
     this.anims.create({
       key: "slash",
@@ -97,6 +96,12 @@ let gameScene = new Phaser.Class({
       frames: this.anims.generateFrameNumbers("coinDrop"),
       frameRate: 10,
       repeat: -1,
+    });
+
+    this.events.on("enemyDied", () => {
+      if (this.enemies.countActive(true) === 0) {
+        spawnLevel();
+      }
     });
   },
 
@@ -116,5 +121,7 @@ let gameScene = new Phaser.Class({
     });
 
     this.counter++;
+
+
   },
 });

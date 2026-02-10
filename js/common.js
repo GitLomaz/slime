@@ -103,3 +103,15 @@ function getIndex(x, y, width) {
 function inBounds(x, y, width, height) {
   return x >= 0 && x < width && y >= 0 && y < height;
 }
+
+function spawnLevel() {
+  LEVELS[0].enemies.forEach((e) => {
+    for (let i = 0; i < e.amount; i++) {
+      switch (e.type) {
+        case "blob":
+          new Blob();
+          break;
+      }
+    }
+  });
+}

@@ -33,6 +33,10 @@ class Blob extends Enemy {
 
     this.ticks += delta;
 
+    if (this.immobile) {
+      return;
+    }
+
     // ---- Choose new direction about every ~40 frames @60fps ≈ 660ms ----
     if (!this.moveDir || this.ticks % 660 < delta) {
       const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);

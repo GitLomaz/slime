@@ -19,6 +19,10 @@ class Enemy extends Phaser.GameObjects.Container {
     this.healthBar.setAlpha(0);
     this.add(this.healthBarBack);
     this.add(this.healthBar);
+    scene.enemies.add(this);
+    spawnAnimation({x: this.x, y: this.y}, undefined, this);
+
+    this.immobile = true;
   }
 
   showHealthbar() {
@@ -34,6 +38,10 @@ class Enemy extends Phaser.GameObjects.Container {
       duration: 500,
       ease: "Linear",
     });
+  }
+
+  setImmobile(state) {
+    this.immobile = state;
   }
 
   tick(delta) {
@@ -90,6 +98,8 @@ class Enemy extends Phaser.GameObjects.Container {
       money.body.setVelocityX(force.x * getRandomInt(100, 400));
       money.body.setVelocityY(force.y * getRandomInt(100, 400));
     }
+    scene.enemies.remove(this, true, true);
+    scene.events.emit("enemyDied");
     this.destroy();
   }
 }
