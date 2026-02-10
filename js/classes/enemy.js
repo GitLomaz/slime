@@ -58,7 +58,6 @@ class Enemy extends Phaser.GameObjects.Container {
   }
 
   takeDamage(damage, force) {
-    console.log("taking damage", damage, force);
     if (this.knockback !== 0) {
       return;
     }

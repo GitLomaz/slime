@@ -27,11 +27,6 @@ let config = {
     activePointers: 3,
   },
 
-  // fps: {
-  //   target: 60,
-  //   forceSetTimeOut: true,
-  // },
-
   physics: {
     default: "arcade",
     arcade: {
