@@ -15,9 +15,31 @@
     <script type="text/javascript" src="./js/common.js"></script>
     <script type="text/javascript" src="./js/main.js"></script>
   </head>
-  <body style="margin: 0px;">
-    <div id="wrapperContainer">
-      <div id="wrapper" style="width: 1128px; height: 615px"></div>
-    </div>
-  </body>
+<body>
+  <div id="wrapperContainer">
+    <div id="wrapper"></div>
+  </div>
+</body>
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;      /* no scrollbars */
+    background: #000;      /* letterbox color */
+    touch-action: none;    /* prevents page pan/zoom stealing touches */
+  }
+
+  #wrapperContainer,
+  #wrapper {
+    width: 100%;
+    height: 100%;
+  }
+
+  canvas {
+    display: block;        /* removes tiny gaps */
+  }
+</style>
 </html>

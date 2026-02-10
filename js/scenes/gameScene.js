@@ -40,6 +40,10 @@ let gameScene = new Phaser.Class({
   },
 
   create: function () {
+    this.fpsText = this.add.text(10, 10, "FPS:", {
+      font: "16px Arial",
+      fill: "#00ff00",
+    }).setScrollFactor(0).setDepth(9999);
     scene = this;
     this.counter = 0;
 
@@ -97,6 +101,8 @@ let gameScene = new Phaser.Class({
   },
 
   update: function () {
+    const fps = Math.floor(this.game.loop.actualFps);
+    this.fpsText.setText("FPS: " + fps);
     if (this.counter % 20 === 0) {
       this.water.setFrame((this.counter % 80) / 20);
     }
