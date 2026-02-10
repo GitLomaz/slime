@@ -27,6 +27,8 @@ class Blob extends Enemy {
     if (this.knockback > 0) {
       this.knockback -= delta;
       return;
+    } else {
+      this.knockback = 0;
     }
 
     this.ticks += delta;

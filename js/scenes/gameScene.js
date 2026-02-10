@@ -80,9 +80,9 @@ let gameScene = new Phaser.Class({
     this.physics.add.collider(this.sprites);
 
     this.player = new Player();
-
+    new Blob()
     for (let i = 0; i < 20; i++) {
-      new Blob();
+      //new Blob();
     }
 
     this.anims.create({

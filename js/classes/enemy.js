@@ -40,7 +40,6 @@ class Enemy extends Phaser.GameObjects.Container {
     if (this.damageFlash > 0) {
       this.damageFlash -= delta;
 
-      // replicate "every 3 frames @60fps ≈ 50ms"
       const damageFlashState = Math.floor(this.damageFlash / 50);
 
       if (damageFlashState % 5 === 0) {
@@ -54,10 +53,12 @@ class Enemy extends Phaser.GameObjects.Container {
     } 
     else {
       this.sprite.clearTint();
+      this.damageFlash = 0;
     }
   }
 
   takeDamage(damage, force) {
+    console.log("taking damage", damage, force);
     if (this.knockback !== 0) {
       return;
     }
