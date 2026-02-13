@@ -13,9 +13,9 @@ let gameScene = new Phaser.Class({
     this.load.tilemapTiledJSON("map", "js/data/template.json");
 
     
-    this.load.spritesheet("coinDrop", "images/coinDrop.png", {
-      frameWidth: 12,
-      frameHeight: 12,
+    this.load.spritesheet("coinDrop", "images/silverCoin.png", {
+      frameWidth: 16,
+      frameHeight: 16,
     });
 
     this.load.spritesheet("waterSprite", "images/water.png", {
@@ -79,7 +79,6 @@ let gameScene = new Phaser.Class({
     this.physics.add.collider(this.sprites, this.layer);
     this.physics.add.collider(this.drops, this.layer);
     this.physics.add.collider(this.sprites);
-    this.cameras.main.setZoom(1.5, 1.5)
 
     this.player = new Player();
 

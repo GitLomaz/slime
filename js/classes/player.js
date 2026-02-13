@@ -23,6 +23,7 @@ class Player extends Phaser.GameObjects.Container {
     this.stepCounter = 0;
     this.swinging = 0;
     this.stun = 0;
+    this.automatic = true;
 
     this.health = {
       health: 100,
@@ -43,6 +44,9 @@ class Player extends Phaser.GameObjects.Container {
     scene.input.on(
       "pointermove",
       (pointer) => {
+        if (this.automatic) {
+          return;
+        }
         const angle =
           Phaser.Math.RAD_TO_DEG *
           Phaser.Math.Angle.Between(this.x, this.y, pointer.worldX, pointer.worldY);
@@ -96,7 +100,7 @@ class Player extends Phaser.GameObjects.Container {
 
     let moving = false;
 
-    if (pointer && this.pointerDown) {
+    if (pointer && this.pointerDown && !this.automatic) {
       const wp = pointer.positionToCamera(cam); // { x, y } in world space
 
       const dx = wp.x - this.x;
@@ -112,6 +116,34 @@ class Player extends Phaser.GameObjects.Container {
           Phaser.Math.Angle.Between(this.x, this.y, wp.x, wp.y);
 
         this.playerAngle = angle;
+      }
+    }
+
+    if (this.automatic) {
+      let { closestEnemy, closestDistance } = this.getClosestEnemy();
+      console.log(closestEnemy, closestDistance);
+      if (closestEnemy) {
+        const angleRad = Phaser.Math.Angle.Between(
+          this.x,
+          this.y,
+          closestEnemy.x,
+          closestEnemy.y
+        );
+        const angleDeg = Phaser.Math.RadToDeg(angleRad);
+        this.playerAngle = angleDeg;
+
+        if (closestDistance > STOP_RADIUS) {
+          // Move toward enemy
+          this.body.setVelocity(
+            Math.cos(angleRad) * SPEED,
+            Math.sin(angleRad) * SPEED
+          );
+          moving = true;
+        } else {
+          this.body.setVelocity(0, 0);
+        }
+      } else {
+        this.body.setVelocity(0, 0);
       }
     }
 
@@ -135,57 +167,62 @@ class Player extends Phaser.GameObjects.Container {
     this.attack(scene.time.now);
   }
 
- attack(now) {
-  // Not ready yet
-  if (now < this.nextAttackAt) return;
+  attack(now) {
+    // Not ready yet
+    if (now < this.nextAttackAt) return;
 
-  // Only bother scanning when we are actually allowed to attack
-  let closestEnemy = null;
-  let closestDistance = Infinity;
+    let { closestEnemy, closestDistance } = this.getClosestEnemy();
 
-  scene.sprites.children.entries.forEach((e) => {
-    if (!e || e.type !== "enemy") return;
+    if (!closestEnemy || closestDistance > 80) return;
 
-    const dist = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
-    if (dist < closestDistance) {
-      closestDistance = dist;
-      closestEnemy = e;
-    }
-  });
+    const COOLDOWN_MS = 1000;
 
-  if (!closestEnemy || closestDistance > 80) return;
+    this.nextAttackAt = now + COOLDOWN_MS;
 
-  const COOLDOWN_MS = 1000;
+    this.swinging = 250;
 
-  this.nextAttackAt = now + COOLDOWN_MS;
+    const spr = scene.add.sprite(0, 0, "slash");
+    spr.setScale(3);
+    spr.setAngle(this.playerAngle);
+    this.add(spr);
 
-  this.swinging = 250;
+    spr.anims.play("slash", true);
+    spr.on("animationcomplete", () => spr.destroy());
 
-  const spr = scene.add.sprite(0, 0, "slash");
-  spr.setScale(3);
-  spr.setAngle(this.playerAngle);
-  this.add(spr);
+    scene.sprites.children.entries.forEach((e) => {
+      if (!e || e.type !== "enemy") return;
 
-  spr.anims.play("slash", true);
-  spr.on("animationcomplete", () => spr.destroy());
+      const d = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
+      if (d >= 100) return;
 
-  scene.sprites.children.entries.forEach((e) => {
-    if (!e || e.type !== "enemy") return;
+      const a = Phaser.Math.Angle.Between(this.x, this.y, e.x, e.y);
 
-    const d = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
-    if (d >= 100) return;
+      const angleDelta = Math.abs(
+        Phaser.Math.Angle.Wrap(Phaser.Math.DegToRad(this.playerAngle) - a)
+      );
 
-    const a = Phaser.Math.Angle.Between(this.x, this.y, e.x, e.y);
+      if (angleDelta < 1.2 && e.knockback <= 0) {
+        e.takeDamage(4, { x: Math.cos(a), y: Math.sin(a) });
+      }
+    });
+  }
 
-    const angleDelta = Math.abs(
-      Phaser.Math.Angle.Wrap(Phaser.Math.DegToRad(this.playerAngle) - a)
-    );
+  getClosestEnemy() {
+    let closestEnemy = null;
+    let closestDistance = Infinity;
 
-    if (angleDelta < 1.2 && e.knockback <= 0) {
-      e.takeDamage(4, { x: Math.cos(a), y: Math.sin(a) });
-    }
-  });
-}
+    scene.sprites.children.entries.forEach((e) => {
+      if (!e || e.type !== "enemy") return;
+
+      const dist = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
+      if (dist < closestDistance) {
+        closestDistance = dist;
+        closestEnemy = e;
+      }
+    });
+
+    return { closestEnemy, closestDistance };
+  }
 
   gainCoins() {
     this.coins++;
