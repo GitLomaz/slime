@@ -3,8 +3,8 @@ class CoinDrop extends Drop {
 
   constructor(x, y, value) {
     super(x, y, "coinDrop");
-    this.setSize(10, 10);
-    this.body.setCircle(5);
+    this.setSize(20, 20);
+    this.body.setCircle(10);
     this.value = value;
     this.sprite.anims.play("coinDrop");
   }

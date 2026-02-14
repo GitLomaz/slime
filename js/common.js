@@ -3,7 +3,6 @@ function transformMap(map) {
   map.layers[0].data.forEach(function (row) {
     row.forEach(function (tile) {
       if (tile.index === 50) {
-        map.validSpawnTiles.push({ x: tile.pixelX, y: tile.pixelY });
         let str = "";
         str += map.layers[0].data[tile.y - 1][tile.x].index === -1 ? "1" : "0";
         str += map.layers[0].data[tile.y][tile.x + 1].index === -1 ? "1" : "0";
@@ -39,6 +38,8 @@ function transformMap(map) {
             default:
               break;
           }
+        } else {
+          map.validSpawnTiles.push({ x: tile.pixelX, y: tile.pixelY });
         }
       }
     });
@@ -158,7 +159,7 @@ function getPathAndNextWaypoint(fromX, fromY, toX, toY) {
   return { path, nextWorldPoint };
 }
 
-function hasClearLineToTarget(fromX, fromY, toX, toY, radius = 16) {
+function hasClearLineToTarget(fromX, fromY, toX, toY, radius = 24) {
   const map = scene.map;
 
   const dx = toX - fromX;

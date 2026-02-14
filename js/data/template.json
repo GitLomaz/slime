@@ -129,22 +129,22 @@
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.1",
- "tileheight":32,
+ "tileheight":48,
  "tilesets":[
         {
          "columns":24,
          "firstgid":1,
-         "image":"..\/..\/images\/grassBig.png",
-         "imageheight":544,
-         "imagewidth":768,
+         "image":"..\/..\/images\/grassBig_big.png",
+         "imageheight":816,
+         "imagewidth":1152,
          "margin":0,
          "name":"grassBig",
          "spacing":0,
          "tilecount":408,
-         "tileheight":32,
-         "tilewidth":32
+         "tileheight":48,
+         "tilewidth":48
         }],
- "tilewidth":32,
+ "tilewidth":48,
  "type":"map",
  "version":"1.10",
  "width":41

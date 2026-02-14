@@ -1,19 +1,19 @@
 class Player extends Phaser.GameObjects.Container {
   constructor() {
-    super(scene, 596, 396);
+    super(scene, 396, 496);
 
     // --- Visual ---
     this.player = scene.add.sprite(0, 0, "player");
     this.player.setFrame(1);
     this.add(this.player);
     this.playerAngle = 0;
-    this.setSize(20, 20);
+    this.setSize(30, 30);
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
     scene.sprites.add(this);
-    this.body.setCircle(9);
-    this.body.setOffset(0, 16)
+    this.body.setCircle(16);
+    this.body.setOffset(0, 21)
     this.body.setImmovable();
 
     this.targetCounter = 30;
@@ -116,7 +116,7 @@ class Player extends Phaser.GameObjects.Container {
     // --- Move toward cursor while mouse/touch is down ---
     const pointer = scene.input && scene.input.activePointer;
     const cam = scene.cameras.main;
-    const STOP_RADIUS = 40;
+    const STOP_RADIUS = 60;
     const SPEED = 200;
 
     let moving = false;
@@ -310,10 +310,10 @@ class Player extends Phaser.GameObjects.Container {
         // scene.map.validSpawnTiles contains valid squares
         const tile = Phaser.Utils.Array.GetRandom(scene.map.validSpawnTiles);
 
-        this.setPosition(tile.x, tile.y);
+        e.setPosition(tile.x, tile.y);
 
-        if (this.body) {
-          this.body.reset(tile.x, tile.y);
+        if (e.body) {
+          e.body.reset(tile.x, tile.y);
         }
         console.log('teleporting!')
         return;

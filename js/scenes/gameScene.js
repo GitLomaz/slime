@@ -8,34 +8,34 @@ let gameScene = new Phaser.Class({
   },
 
   preload: function () {
-    this.load.image("grassBig", "images/grassBig.png");
-    this.load.image("pixel2", "images/pixel2.png");
+    this.load.image("grassBig", "images/grassBig_big.png");
+    this.load.image("pixel2", "images/pixel2_big.png");
     this.load.tilemapTiledJSON("map", "js/data/template.json");
 
     
-    this.load.spritesheet("coinDrop", "images/silverCoin.png", {
-      frameWidth: 16,
-      frameHeight: 16,
+    this.load.spritesheet("coinDrop", "images/silverCoin_big.png", {
+      frameWidth: 24,
+      frameHeight: 24,
     });
 
-    this.load.spritesheet("waterSprite", "images/water.png", {
-      frameWidth: 16,
-      frameHeight: 16,
+    this.load.spritesheet("waterSprite", "images/water_big.png", {
+      frameWidth: 24,
+      frameHeight: 24,
     });
 
-    this.load.spritesheet("slash", "images/slash.png", {
-      frameWidth: 32,
-      frameHeight: 32,
-    });
-
-    this.load.spritesheet("blob", "images/blob.png", {
+    this.load.spritesheet("slash", "images/slash_big.png", {
       frameWidth: 48,
       frameHeight: 48,
     });
 
-    this.load.spritesheet("player", "images/player.png", {
-      frameWidth: 48,
-      frameHeight: 48,
+    this.load.spritesheet("blob", "images/blob_big.png", {
+      frameWidth: 72,
+      frameHeight: 72,
+    });
+
+    this.load.spritesheet("player", "images/player_big.png", {
+      frameWidth: 72,
+      frameHeight: 72,
     });
 
   },
@@ -76,7 +76,14 @@ let gameScene = new Phaser.Class({
       dragY: 500,
     });
 
-    this.physics.add.collider(this.sprites, this.layer);
+    this.physics.add.collider(this.sprites, this.layer, (sprite, layer) => {
+      if (sprite.type === "enemy" && sprite.knockback > 0) {
+        console.log(sprite)
+        sprite.body.setVelocityX(0);
+        sprite.body.setVelocityY(0);
+        sprite.knockback = 250;
+      }
+    });
     this.physics.add.collider(this.drops, this.layer);
     this.physics.add.collider(this.sprites);
 

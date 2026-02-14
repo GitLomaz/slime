@@ -7,13 +7,13 @@ class Blob extends Enemy {
         scene.map.validSpawnTiles[
           getRandomInt(0, scene.map.validSpawnTiles.length)
         ];
-      x = spawnTile.x;
-      y = spawnTile.y;
+      x = spawnTile.x + 24;
+      y = spawnTile.y + 24;
     }
 
     super(x, y, "blob");
-    this.setSize(25, 0);
-    this.body.setCircle(13);
+    this.setSize(36, 0);
+    this.body.setCircle(20);
     this.health = 10;
     this.healthMax = 10;
     this.points = getRandomInt(2, 12);
