@@ -168,6 +168,10 @@ class Player extends Phaser.GameObjects.Container {
             this.currentTarget.x, this.currentTarget.y
           );
 
+          if (!result) {
+            this.setCurrentTarget()
+            return
+          }
 
           const wx = result.nextWorldPoint.x;
           const wy = result.nextWorldPoint.y;
@@ -301,8 +305,19 @@ class Player extends Phaser.GameObjects.Container {
       const grid = scene.pfGrid.clone();
 
       // If enemy tile isn't walkable, skip for now (we can add nearest-walkable later)
-      if (!grid.isWalkableAt(gx, gy)) return;
+      if (!grid.isWalkableAt(gx, gy)) {
+        // enemy e needs to be teleported back onto a walkable tile
+        // scene.map.validSpawnTiles contains valid squares
+        const tile = Phaser.Utils.Array.GetRandom(scene.map.validSpawnTiles);
 
+        this.setPosition(tile.x, tile.y);
+
+        if (this.body) {
+          this.body.reset(tile.x, tile.y);
+        }
+        console.log('teleporting!')
+        return;
+      }
       const path = scene.pfFinder.findPath(sx, sy, gx, gy, grid);
       if (!path || path.length === 0) return;
 
