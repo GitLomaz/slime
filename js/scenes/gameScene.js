@@ -103,6 +103,30 @@ let gameScene = new Phaser.Class({
         spawnLevel();
       }
     });
+
+
+
+    // PATHFINDING!!
+    const layerData = scene.map.layers[0].data; // 2D array: [row][col] of Tile objects
+    const height = layerData.length;
+    const width = layerData[0].length;
+
+    // PF matrix: 0 = walkable, 1 = blocked
+    const matrix = Array.from({ length: height }, (_, y) =>
+      Array.from({ length: width }, (_, x) => {
+        const tile = layerData[y][x];
+
+        // Your rule: NOT 0 is walkable
+        // So blocked if index === 0
+        return tile && tile.index !== 0 ? 0 : 1;
+      })
+    );
+
+    scene.pfGrid = new PF.Grid(width, height, matrix);
+    scene.pfFinder = new PF.AStarFinder({
+      allowDiagonal: true,
+      dontCrossCorners: true,
+    });
   },
 
   update: function (time, delta) {

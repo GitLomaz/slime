@@ -115,3 +115,106 @@ function spawnLevel() {
     }
   });
 }
+
+function worldToTile(map, x, y) {
+  const t = map.worldToTileXY(x, y);
+  return { x: t.x, y: t.y };
+}
+
+function tileCenterToWorld(map, tx, ty) {
+  const p = map.tileToWorldXY(tx, ty);
+  return {
+    x: p.x + map.tileWidth / 2,
+    y: p.y + map.tileHeight / 2 - 16,
+  };
+}
+
+// returns { path, nextWorldPoint } (or null if no path)
+function getPathAndNextWaypoint(fromX, fromY, toX, toY) {
+  const map = scene.map;
+
+  const start = worldToTile(map, fromX, fromY);
+  const goal = worldToTile(map, toX, toY);
+
+  // CLONE grid every time (PF mutates it!)
+  const grid = scene.pfGrid.clone();
+  const finder = scene.pfFinder;
+
+  const sx = Phaser.Math.Clamp(start.x, 0, map.width - 1);
+  const sy = Phaser.Math.Clamp(start.y, 0, map.height - 1);
+  const gx = Phaser.Math.Clamp(goal.x, 0, map.width - 1);
+  const gy = Phaser.Math.Clamp(goal.y, 0, map.height - 1);
+
+  // If goal is blocked, fail for now (we'll improve this later)
+  if (!grid.isWalkableAt(gx, gy)) return null;
+
+  const path = finder.findPath(sx, sy, gx, gy, grid);
+  if (!path || path.length < 2) return null;
+
+  // path[0] is current tile, path[1] is the NEXT tile to step toward
+  const [nx, ny] = path[1];
+  const nextWorldPoint = tileCenterToWorld(map, nx, ny);
+
+  return { path, nextWorldPoint };
+}
+
+function hasClearLineToTarget(fromX, fromY, toX, toY, radius = 16) {
+  const map = scene.map;
+
+  const dx = toX - fromX;
+  const dy = toY - fromY;
+  const len = Math.hypot(dx, dy);
+
+  if (len === 0) return true;
+
+  // perpendicular normal
+  const nx = -dy / len;
+  const ny = dx / len;
+
+  // number of rays across thickness
+  const steps = Math.ceil(radius / map.tileWidth);
+
+  for (let i = -steps; i <= steps; i++) {
+
+    const offsetX = nx * i * map.tileWidth * 0.5;
+    const offsetY = ny * i * map.tileWidth * 0.5;
+
+    if (!rayClear(
+      fromX + offsetX,
+      fromY + offsetY,
+      toX + offsetX,
+      toY + offsetY
+    )) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function rayClear(fromX, fromY, toX, toY) {
+  const map = scene.map;
+  const layerData = map.layers[0].data;
+
+  const a = map.worldToTileXY(fromX, fromY);
+  const b = map.worldToTileXY(toX, toY);
+
+  const line = new Phaser.Geom.Line(a.x, a.y, b.x, b.y);
+  const points = line.getPoints(
+    Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y))
+  );
+
+  for (const p of points) {
+    const tx = Math.round(p.x);
+    const ty = Math.round(p.y);
+
+    if (ty < 0 || ty >= layerData.length) continue;
+    if (tx < 0 || tx >= layerData[0].length) continue;
+
+    const tile = layerData[ty][tx];
+
+    if (!tile || tile.index === 0) return false;
+  }
+
+  return true;
+}

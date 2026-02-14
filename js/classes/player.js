@@ -16,6 +16,12 @@ class Player extends Phaser.GameObjects.Container {
     this.body.setOffset(0, 16)
     this.body.setImmovable();
 
+    this.targetCounter = 30;
+
+    this.debugWaypoint = scene.add.graphics();
+    this.debugWaypoint.setDepth(9999); // ensure it's on top
+    this.timeSinceLastKill = 0
+
     // --- Game state ---
     this.attackCooldown = 0;
     this.magnet = 100;
@@ -24,6 +30,7 @@ class Player extends Phaser.GameObjects.Container {
     this.swinging = 0;
     this.stun = 0;
     this.automatic = true;
+    
 
     this.health = {
       health: 100,
@@ -66,6 +73,20 @@ class Player extends Phaser.GameObjects.Container {
   }
 
   tick(delta) {
+    this.timeSinceLastKill += delta
+    if (this.targetCounter === 0 || !this.currentTarget) {
+      this.setCurrentTarget()
+      this.targetCounter = 30
+    } else {
+      this.targetCounter--;
+    }
+
+    if (!this.currentTarget) {
+      console.log('no target for some reas')
+      return;
+    }
+
+
     // Reset velocity each tick
     this.body.setVelocity(0, 0);
 
@@ -120,32 +141,63 @@ class Player extends Phaser.GameObjects.Container {
     }
 
     if (this.automatic) {
-      let { closestEnemy, closestDistance } = this.getClosestEnemy();
-      console.log(closestEnemy, closestDistance);
-      if (closestEnemy) {
-        const angleRad = Phaser.Math.Angle.Between(
-          this.x,
-          this.y,
-          closestEnemy.x,
-          closestEnemy.y
+      const dist = Phaser.Math.Distance.Between(this.x, this.y, this.currentTarget.x, this.currentTarget.y);
+      if (dist > STOP_RADIUS) {
+        const clear = hasClearLineToTarget(
+          this.x, this.y,
+          this.currentTarget.x, this.currentTarget.y
         );
-        const angleDeg = Phaser.Math.RadToDeg(angleRad);
-        this.playerAngle = angleDeg;
-
-        if (closestDistance > STOP_RADIUS) {
-          // Move toward enemy
+        if (clear) {
+          const angleRad = Phaser.Math.Angle.Between(
+            this.x,
+            this.y,
+            this.currentTarget.x,
+            this.currentTarget.y
+          );
+          const angleDeg = Phaser.Math.RadToDeg(angleRad);
+          this.playerAngle = angleDeg;
           this.body.setVelocity(
             Math.cos(angleRad) * SPEED,
             Math.sin(angleRad) * SPEED
           );
           moving = true;
+          this.debugWaypoint.clear();
         } else {
-          this.body.setVelocity(0, 0);
+          const result = getPathAndNextWaypoint(
+            this.x, this.y,
+            this.currentTarget.x, this.currentTarget.y
+          );
+
+
+          const wx = result.nextWorldPoint.x;
+          const wy = result.nextWorldPoint.y;
+
+          // draw debug waypoint
+          this.debugWaypoint.clear();
+          this.debugWaypoint.fillStyle(0xff0000, 1);
+          this.debugWaypoint.fillCircle(wx, wy, 4);
+
+          const angleRad = Phaser.Math.Angle.Between(
+            this.x,
+            this.y,
+            result.nextWorldPoint.x,
+            result.nextWorldPoint.y
+          );
+          const angleDeg = Phaser.Math.RadToDeg(angleRad);
+          this.playerAngle = angleDeg;
+          this.body.setVelocity(
+            Math.cos(angleRad) * SPEED,
+            Math.sin(angleRad) * SPEED
+          );
+          moving = true;
+
+          
         }
-      } else {
-        this.body.setVelocity(0, 0);
       }
+    } else {
+      this.body.setVelocity(0, 0);
     }
+
 
     // --- Walk animation timing (was stepCounter++ per frame) ---
     // Keep your exact math: newFrame = floor(stepCounter/6)%4 + offset
@@ -203,6 +255,10 @@ class Player extends Phaser.GameObjects.Container {
 
       if (angleDelta < 1.2 && e.knockback <= 0) {
         e.takeDamage(4, { x: Math.cos(a), y: Math.sin(a) });
+        if (this.timeSinceLastKill > 10000) {
+          console.log(this.timeSinceLastKill)
+        }
+        this.timeSinceLastKill = 0
       }
     });
   }
@@ -223,6 +279,43 @@ class Player extends Phaser.GameObjects.Container {
 
     return { closestEnemy, closestDistance };
   }
+
+  setCurrentTarget() {
+    let closestEnemy = null;
+    let closestDistance = Infinity;
+
+    const map = scene.map;
+
+    const start = map.worldToTileXY(this.x, this.y);
+    const sx = Phaser.Math.Clamp(start.x, 0, map.width - 1);
+    const sy = Phaser.Math.Clamp(start.y, 0, map.height - 1);
+
+    scene.sprites.children.entries.forEach((e) => {
+      if (!e || e.type !== "enemy") return;
+
+      const goal = map.worldToTileXY(e.x, e.y);
+      const gx = Phaser.Math.Clamp(goal.x, 0, map.width - 1);
+      const gy = Phaser.Math.Clamp(goal.y, 0, map.height - 1);
+
+      // Clone grid EVERY time (PF mutates it)
+      const grid = scene.pfGrid.clone();
+
+      // If enemy tile isn't walkable, skip for now (we can add nearest-walkable later)
+      if (!grid.isWalkableAt(gx, gy)) return;
+
+      const path = scene.pfFinder.findPath(sx, sy, gx, gy, grid);
+      if (!path || path.length === 0) return;
+
+      const pathLen = path.length;
+      if (pathLen < closestDistance) {
+        closestDistance = pathLen;
+        closestEnemy = e;
+      }
+    });
+
+    this.currentTarget = closestEnemy
+  }
+
 
   gainCoins() {
     this.coins++;
