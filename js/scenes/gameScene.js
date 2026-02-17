@@ -88,9 +88,7 @@ let gameScene = new Phaser.Class({
     });
 
     this.ui = new FixedUIContainer()
-
-    const inventory = this.add.image(0, 0, "backpack").setScale(2)
-    this.ui.addAnchored(inventory, "right")
+    new BackpackButton()
 
     this.physics.add.collider(this.sprites, this.layer, (sprite, layer) => {
       if (sprite.type === "enemy" && sprite.knockback > 0) {
