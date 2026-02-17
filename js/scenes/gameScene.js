@@ -52,6 +52,21 @@ let gameScene = new Phaser.Class({
   },
 
   create: function () {
+
+
+    this._applyingPreset = false;
+    this._pendingPresetRAF = null;
+    this._currentPresetName = null;
+
+    // Apply once after boot
+    this.applyBestPresetSafe();
+
+    // Apply on resize, but safely
+    this.scale.on("resize", () => this.applyBestPresetSafe());
+
+
+
+
     this.fpsText = this.add.text(10, 10, "FPS:", {
       font: "16px Arial",
       fill: "#00ff00",
@@ -175,4 +190,33 @@ let gameScene = new Phaser.Class({
 
 
   },
+
+
+applyBestPresetSafe() {
+  if (this._applyingPreset) return;
+  if (this._pendingRAF) return;
+
+  this._pendingRAF = requestAnimationFrame(() => {
+    this._pendingRAF = null;
+
+    // ✅ This is the actual available space in the parent DOM element
+    const parentW = this.scale.parentSize.width;
+    const parentH = this.scale.parentSize.height;
+
+    const preset = pickPresetForParent(parentW, parentH);
+
+    if (preset.name === this._currentPresetName) return;
+
+    this._applyingPreset = true;
+    this._currentPresetName = preset.name;
+
+    this.scale.setGameSize(preset.w, preset.h);
+
+    console.log(
+      `Preset: ${preset.name} ${preset.w}x${preset.h} (parent ${Math.round(parentW)}x${Math.round(parentH)})`
+    );
+
+    this._applyingPreset = false;
+  });
+}
 });
