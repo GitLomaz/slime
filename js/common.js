@@ -126,7 +126,7 @@ function tileCenterToWorld(map, tx, ty) {
   const p = map.tileToWorldXY(tx, ty);
   return {
     x: p.x + map.tileWidth / 2,
-    y: p.y + map.tileHeight / 2 - 16,
+    y: p.y + map.tileHeight / 2,
   };
 }
 
@@ -159,7 +159,7 @@ function getPathAndNextWaypoint(fromX, fromY, toX, toY) {
   return { path, nextWorldPoint };
 }
 
-function hasClearLineToTarget(fromX, fromY, toX, toY, radius = 24) {
+function hasClearLineToTarget(fromX, fromY, toX, toY, radius = 32) {
   const map = scene.map;
 
   const dx = toX - fromX;

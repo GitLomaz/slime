@@ -3,7 +3,7 @@ class Player extends Phaser.GameObjects.Container {
     super(scene, 396, 496);
 
     // --- Visual ---
-    this.player = scene.add.sprite(0, 0, "player");
+    this.player = scene.add.sprite(0, -15, "player");
     this.player.setFrame(1);
     this.add(this.player);
     this.playerAngle = 0;
@@ -12,8 +12,8 @@ class Player extends Phaser.GameObjects.Container {
     scene.add.existing(this);
     scene.physics.add.existing(this);
     scene.sprites.add(this);
-    this.body.setCircle(16);
-    this.body.setOffset(0, 21)
+    this.body.setCircle(12);
+    // this.body.setOffset(0, 20)
     this.body.setImmovable();
 
     this.targetCounter = 30;
@@ -24,7 +24,7 @@ class Player extends Phaser.GameObjects.Container {
 
     // --- Game state ---
     this.attackCooldown = 0;
-    this.magnet = 100;
+    this.magnet = 130;
     this.coins = 0;
     this.stepCounter = 0;
     this.swinging = 0;
@@ -82,7 +82,6 @@ class Player extends Phaser.GameObjects.Container {
     }
 
     if (!this.currentTarget) {
-      console.log('no target for some reas')
       return;
     }
 
@@ -259,7 +258,7 @@ class Player extends Phaser.GameObjects.Container {
 
       if (angleDelta < 1.2 && e.knockback <= 0) {
         e.takeDamage(4, { x: Math.cos(a), y: Math.sin(a) });
-        if (this.timeSinceLastKill > 10000) {
+        if (this.timeSinceLastKill > 15000) {
           console.log(this.timeSinceLastKill)
         }
         this.timeSinceLastKill = 0
@@ -307,15 +306,6 @@ class Player extends Phaser.GameObjects.Container {
       // If enemy tile isn't walkable, skip for now (we can add nearest-walkable later)
       if (!grid.isWalkableAt(gx, gy)) {
         // enemy e needs to be teleported back onto a walkable tile
-        // scene.map.validSpawnTiles contains valid squares
-        const tile = Phaser.Utils.Array.GetRandom(scene.map.validSpawnTiles);
-
-        e.setPosition(tile.x, tile.y);
-
-        if (e.body) {
-          e.body.reset(tile.x, tile.y);
-        }
-        console.log('teleporting!')
         return;
       }
       const path = scene.pfFinder.findPath(sx, sy, gx, gy, grid);

@@ -7,7 +7,7 @@ let config = {
   parent: "wrapper",
 
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.ENVELOP,
     autoCenter: Phaser.Scale.CENTER_BOTH,
 
     width: GAME_WIDTH,

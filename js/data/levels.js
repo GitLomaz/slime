@@ -1,7 +1,7 @@
 LEVELS = [
   {
     enemies: [
-      { type: "blob", amount: 50 },
+      { type: "blob", amount: 10 },
     ],
   }
 ]

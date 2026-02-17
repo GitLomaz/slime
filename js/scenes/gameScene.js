@@ -10,8 +10,19 @@ let gameScene = new Phaser.Class({
   preload: function () {
     this.load.image("grassBig", "images/grassBig_big.png");
     this.load.image("pixel2", "images/pixel2_big.png");
+    this.load.image("backpack", "images/backpack.png");
     this.load.tilemapTiledJSON("map", "js/data/template.json");
 
+      
+    this.load.spritesheet("basicFrame", "images/basicFrame.png", {
+      frameWidth: 12,
+      frameHeight: 12,
+    });
+
+    this.load.spritesheet("buttonFrame", "images/buttonFrame.png", {
+      frameWidth: 12,
+      frameHeight: 12,
+    });
     
     this.load.spritesheet("coinDrop", "images/silverCoin_big.png", {
       frameWidth: 24,
@@ -76,14 +87,25 @@ let gameScene = new Phaser.Class({
       dragY: 500,
     });
 
+    this.ui = new FixedUIContainer()
+
+    const inventory = this.add.image(0, 0, "backpack").setScale(2)
+    this.ui.addAnchored(inventory, "right")
+
     this.physics.add.collider(this.sprites, this.layer, (sprite, layer) => {
       if (sprite.type === "enemy" && sprite.knockback > 0) {
-        console.log(sprite)
         sprite.body.setVelocityX(0);
         sprite.body.setVelocityY(0);
         sprite.knockback = 250;
       }
     });
+
+    this.physics.add.collider(this.drops, this.layer, (sprite, layer) => {
+      sprite.body.setVelocityX(0);
+      sprite.body.setVelocityY(0);
+      sprite.knockback = 250;
+    });
+
     this.physics.add.collider(this.drops, this.layer);
     this.physics.add.collider(this.sprites);
 

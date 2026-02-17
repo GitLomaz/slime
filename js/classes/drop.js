@@ -22,7 +22,7 @@ class Drop extends Phaser.GameObjects.Container {
       this.x,
       this.y
     );
-    if (dist < 10) {
+    if (dist < 20) {
       this.collect();
     } else if (dist < scene.player.magnet) {
       scene.physics.moveToObject(
