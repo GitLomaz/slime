@@ -15,13 +15,13 @@ let gameScene = new Phaser.Class({
 
       
     this.load.spritesheet("basicFrame", "images/basicFrame.png", {
-      frameWidth: 12,
-      frameHeight: 12,
+      frameWidth: 24,
+      frameHeight: 24,
     });
 
     this.load.spritesheet("buttonFrame", "images/buttonFrame.png", {
-      frameWidth: 12,
-      frameHeight: 12,
+      frameWidth: 24,
+      frameHeight: 24,
     });
     
     this.load.spritesheet("coinDrop", "images/silverCoin_big.png", {

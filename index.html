@@ -20,11 +20,13 @@
     <script type="text/javascript" src="./js/globals.js"></script>
     <script type="text/javascript" src="./js/common.js"></script>
     <script type="text/javascript" src="./js/main.js"></script>
+
   </head>
 <body>
   <div id="wrapperContainer">
     <div id="wrapper"></div>
   </div>
+  <div style="font-family:font1; position:absolute; left:-1000px; visibility:hidden;">.</div>
 </body>
 
 <style>
@@ -33,9 +35,9 @@
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;      /* no scrollbars */
-    background: #000;      /* letterbox color */
-    touch-action: none;    /* prevents page pan/zoom stealing touches */
+    overflow: hidden; 
+    background: #000; 
+    touch-action: none;  
   }
 
   #wrapperContainer,
@@ -45,7 +47,15 @@
   }
 
   canvas {
-    display: block;        /* removes tiny gaps */
+    display: block; 
   }
+
+  @font-face {
+    font-family: font1;
+    src: url('./font.ttf');
+    font-weight:400;
+    font-weight:normal;
+  }
+
 </style>
 </html>
