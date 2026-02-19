@@ -44,6 +44,11 @@ let gameScene = new Phaser.Class({
       frameHeight: 72,
     });
 
+    this.load.spritesheet("vulture", "images/vulture.png", {
+      frameWidth: 24,
+      frameHeight: 24,
+    });
+
     this.load.spritesheet("player", "images/player_big.png", {
       frameWidth: 72,
       frameHeight: 72,
@@ -105,7 +110,7 @@ let gameScene = new Phaser.Class({
     this.ui = new FixedUIContainer()
     new BackpackButton()
 
-    this.physics.add.collider(this.sprites, this.layer, (sprite, layer) => {
+    this.physics.add.collider(this.sprites, this.layer, (sprite) => {
       if (sprite.type === "enemy" && sprite.knockback > 0) {
         sprite.body.setVelocityX(0);
         sprite.body.setVelocityY(0);
@@ -113,7 +118,7 @@ let gameScene = new Phaser.Class({
       }
     });
 
-    this.physics.add.collider(this.drops, this.layer, (sprite, layer) => {
+    this.physics.add.collider(this.drops, this.layer, (sprite) => {
       sprite.body.setVelocityX(0);
       sprite.body.setVelocityY(0);
       sprite.knockback = 250;
@@ -122,7 +127,6 @@ let gameScene = new Phaser.Class({
     this.physics.add.collider(this.drops, this.layer);
     this.physics.add.collider(this.sprites);
 
-    this.player = new Player();
 
     spawnLevel();
 
@@ -140,13 +144,21 @@ let gameScene = new Phaser.Class({
       repeat: -1,
     });
 
+    this.anims.create({
+      key: "vulture",
+      frames: scene.anims.generateFrameNumbers("vulture"),
+      frameRate: 10,
+      repeat: -1,
+    });
+
     this.events.on("enemyDied", () => {
       if (this.enemies.countActive(true) === 0) {
         spawnLevel();
       }
     });
 
-
+    this.player = new Player();
+    this.vulture = new Vulture();
 
     // PATHFINDING!!
     const layerData = scene.map.layers[0].data; // 2D array: [row][col] of Tile objects
@@ -185,6 +197,8 @@ let gameScene = new Phaser.Class({
     scene.drops.children.entries.forEach(e => {
       e.tick(delta);
     });
+
+    this.vulture.tick(time, delta)
 
     this.counter++;
 

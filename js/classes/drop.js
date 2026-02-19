@@ -31,5 +31,14 @@ class Drop extends Phaser.GameObjects.Container {
         2 * (scene.player.magnet - dist)
       );
     }
+    let dist2 = Phaser.Math.Distance.Between(
+      scene.vulture.x,
+      scene.vulture.y,
+      this.x,
+      this.y
+    );
+    if (dist2 < 20) {
+      this.collect();
+    }
   }
 }

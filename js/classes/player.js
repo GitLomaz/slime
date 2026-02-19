@@ -18,8 +18,8 @@ class Player extends Phaser.GameObjects.Container {
 
     this.targetCounter = 30;
 
-    this.debugWaypoint = scene.add.graphics();
-    this.debugWaypoint.setDepth(9999); // ensure it's on top
+    // this.debugWaypoint = scene.add.graphics();
+    // this.debugWaypoint.setDepth(9999); // ensure it's on top
     this.timeSinceLastKill = 0
 
     // --- Game state ---
@@ -29,7 +29,7 @@ class Player extends Phaser.GameObjects.Container {
     this.stepCounter = 0;
     this.swinging = 0;
     this.stun = 0;
-    this.automatic = true;
+    this.automatic = false;
     
 
     this.health = {
@@ -160,7 +160,7 @@ class Player extends Phaser.GameObjects.Container {
             Math.sin(angleRad) * SPEED
           );
           moving = true;
-          this.debugWaypoint.clear();
+          // this.debugWaypoint.clear();
         } else {
           const result = getPathAndNextWaypoint(
             this.x, this.y,
@@ -176,9 +176,9 @@ class Player extends Phaser.GameObjects.Container {
           const wy = result.nextWorldPoint.y;
 
           // draw debug waypoint
-          this.debugWaypoint.clear();
-          this.debugWaypoint.fillStyle(0xff0000, 1);
-          this.debugWaypoint.fillCircle(wx, wy, 4);
+          // this.debugWaypoint.clear();
+          // this.debugWaypoint.fillStyle(0xff0000, 1);
+          // this.debugWaypoint.fillCircle(wx, wy, 4);
 
           const angleRad = Phaser.Math.Angle.Between(
             this.x,
@@ -193,12 +193,8 @@ class Player extends Phaser.GameObjects.Container {
             Math.sin(angleRad) * SPEED
           );
           moving = true;
-
-          
         }
       }
-    } else {
-      this.body.setVelocity(0, 0);
     }
 
 
